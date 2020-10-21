@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Joy Of Cycling</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body style="background-color: rgb(34, 24, 28);
+    font-family: Helvetica;
+    color: rgb(248, 81, 3);">
+<div>
+    <h2>Joy Of Cycling is een simpele webapp waarmee je een prachtige aandenken creëert aan een jaar vol fietsplezier.</h2>
+    <h2>Ontdek het zelf.</h2>
+</div>
+
+<div>
+    <a href="http://www.strava.com/oauth/authorize?client_id=54588&response_type=code&redirect_uri=http://localhost:8080/exchange_token&approval_prompt=force&scope=activity:read_all">
+        <img th:src="@{images/btn_strava_connectwith_orange@2x.png}" alt="Strava connect button" </a>
+</div>
+<!--<div>
+    <a href="http://www.strava.com/oauth/authorize?client_id=54588&response_type=code&redirect_uri=http://localhost:8080/exchange_token&approval_prompt=force&scope=activity:read_all">
+        <img src="images/btn_strava_connectwith_orange@2x.png" alt="Strava connect button"</a>
+</div>-->
+</body>
+</html>
