@@ -1,18 +1,29 @@
-package be.vdab.stravavisuals.services;
+package be.vdab.stravavisuals.config;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.net.URL;
 
-public class MyAPIApplication {
+//TRAINER: This looks more like a configuration class than a service?
+@Component
+public class MyAPIApplicationSettings {
 
-    private String category = "Visualizer";
+    //all the values are set in application.properties so you don't need to hardcode values in your java classes
+    @Value("${category}")
+    private String category ;
     private String club = null;
-    private String clientID = "54588";
-    private String clientSecret = "4fa6771db362011bc5d4c0b98930b241e9af34cc";
+    @Value("${clientID}")
+    private String clientID ;
+    @Value("${clientSecret}")
+    private String clientSecret ;
     private String Code = null;
     private String accessToken = null;
     private String refreshToken = null;
-    private String website = "http://www.strava-testapp.com";
-    private String authorizationCallbackDomain = "localhost:8080/home";
+    @Value("${website}")
+    private String website ;
+    @Value("${authorizationCallbackDomain}")
+    private String authorizationCallbackDomain ;
 
     public void setCode(String code) {
         Code = code;
