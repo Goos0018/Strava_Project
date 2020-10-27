@@ -3,8 +3,6 @@ package be.vdab.stravavisuals.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.net.URL;
-
 //TRAINER: This looks more like a configuration class than a service?
 @Component
 public class MyAPIApplicationSettings {
@@ -14,7 +12,7 @@ public class MyAPIApplicationSettings {
     private String category ;
     private String club = null;
     @Value("${clientID}")
-    private String clientID ;
+    private int clientID ;
     @Value("${clientSecret}")
     private String clientSecret ;
     private String Code = null;
@@ -45,7 +43,7 @@ public class MyAPIApplicationSettings {
         return club;
     }
 
-    public String getClientID() {
+    public Integer getClientID() {
         return clientID;
     }
 

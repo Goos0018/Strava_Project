@@ -1,6 +1,12 @@
-package be.vdab.stravavisuals;
+package be.vdab.stravavisuals.controller;
 
 import be.vdab.stravavisuals.config.MyAPIApplicationSettings;
+import javastrava.api.v3.auth.AuthorisationService;
+import javastrava.api.v3.auth.impl.retrofit.AuthorisationServiceImpl;
+import javastrava.api.v3.auth.model.Token;
+import javastrava.api.v3.model.StravaAthlete;
+import javastrava.api.v3.service.Strava;
+import org.apache.http.client.HttpResponseException;
 import org.apache.oltu.oauth2.client.OAuthClient;
 import org.apache.oltu.oauth2.client.URLConnectionClient;
 import org.apache.oltu.oauth2.client.request.OAuthClientRequest;
@@ -17,7 +23,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriBuilder;
 
 import java.io.IOException;
 import java.net.URL;
@@ -26,15 +31,26 @@ import java.util.Scanner;
 @Controller
 public class AuthorizationController {
 
-    //TRAINER: you can use resttemplete if you need to send requests to other api's
-    @Autowired
+    //TRAINER: you can use rest-template if you need to send requests to other api's
     private RestTemplate restTemplate;
 
-    @Autowired
     private MyAPIApplicationSettings myAPI;
 
+    @Autowired
+    public AuthorizationController setRestTemplate(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+        return this;
+    }
+
+    @Autowired
+    public AuthorizationController setMyAPI(MyAPIApplicationSettings myAPI) {
+        this.myAPI = myAPI;
+        return this;
+    }
+
     @GetMapping("/exchange_token")
-    public String getAuthorization(@RequestParam String code) throws OAuthSystemException, OAuthProblemException, IOException {
+    public String getAuthorization(@RequestParam String code)
+            throws OAuthSystemException, OAuthProblemException, IOException {
 
         myAPI.setCode(code);
         // Create the Application Authorization Request by
@@ -44,7 +60,7 @@ public class AuthorizationController {
                 // setting grant type to authorization code,
                 .setGrantType(GrantType.AUTHORIZATION_CODE)
                 // setting the Client ID of your registered application,
-                .setClientId(myAPI.getClientID())
+                .setClientId(myAPI.getClientID().toString())
                 // setting the Client secret of your registered application,
                 .setClientSecret(myAPI.getClientSecret())
                 // setting the redirect URI back to the servlet,
@@ -55,7 +71,9 @@ public class AuthorizationController {
 
         // Receive your access token & refresh token.
         OAuthClient oAuthClient = new OAuthClient(new URLConnectionClient());
-        OAuthJSONAccessTokenResponse oAuthResponse = oAuthClient.accessToken(request, OAuthJSONAccessTokenResponse.class);
+        OAuthJSONAccessTokenResponse oAuthResponse = oAuthClient.accessToken(
+                request,
+                OAuthJSONAccessTokenResponse.class);
         String accessToken = oAuthResponse.getAccessToken();
         myAPI.setAccessToken(accessToken);
         String refreshToken = oAuthResponse.getRefreshToken();
@@ -82,21 +100,25 @@ public class AuthorizationController {
         System.out.println(url.toString());
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization","Bearer " + myAPI.getAccessToken());
-        HttpEntity<String> entity = new HttpEntity<>(null, headers);
-        ResponseEntity<String> response = restTemplate.exchange(url.toString(), HttpMethod.GET, entity, String.class);
+        HttpEntity<String> entityWithHeader = new HttpEntity<>(null, headers);
+        ResponseEntity<String> response = restTemplate.exchange(
+                url.toString(), HttpMethod.GET, entityWithHeader, String.class);
         int responseCode = response.getStatusCodeValue();
-        // Check if responseCode is not 200.
-        String inline = null;
-        if (responseCode != 200) {
-            throw new RuntimeException("HttpResponseCode: " + responseCode);
+        // Check if responseCode is 200.
+        if (responseCode == 200) {
+            System.out.println(response);
+            System.out.println(response.getBody());
         } else {
-            Scanner sc = new Scanner(url.openStream());
-            while (sc.hasNext()) {
-                System.out.println(sc.nextLine());
-            }
+            throw new HttpResponseException(responseCode, "HttpResponseCode: " + responseCode);
         }
 
-
+        AuthorisationService service = new AuthorisationServiceImpl();
+        Token token = service.tokenExchange(
+                myAPI.getClientID(),
+                myAPI.getClientSecret(),
+                myAPI.getCode());
+        Strava strava = new Strava(token);
+        StravaAthlete athlete = strava.getAthlete(token.getAthlete().getId());
 
         /*// Use the access token to query Strava API.
         OAuthClientRequest bearerClientRequest = new OAuthBearerClientRequest("http://www.strava.com/api/v3/athlete/activities")
